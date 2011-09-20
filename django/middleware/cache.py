@@ -69,6 +69,10 @@ class UpdateCacheMiddleware(object):
         self.cache_alias = settings.CACHE_MIDDLEWARE_ALIAS
         self.cache = get_cache(self.cache_alias)
 
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        if hasattr(view_func, '__cbvclass__') and hasattr(view_func.__cbvclass__, 'cache_timeout'):
+            request.cache_timeout = view_func.__cbvclass__.cache_timeout
+
     def _session_accessed(self, request):
         try:
             return request.session.accessed
@@ -100,7 +104,7 @@ class UpdateCacheMiddleware(object):
         # length.
         timeout = get_max_age(response)
         if timeout == None:
-            timeout = self.cache_timeout
+            timeout = getattr(request, 'cache_timeout', self.cache_timeout)
         elif timeout == 0:
             # max-age was set to 0, don't bother caching.
             return response

@@ -51,6 +51,10 @@ class View(object):
         # and possible attributes set by decorators
         # like csrf_exempt from dispatch
         update_wrapper(view, cls.dispatch, assigned=())
+
+        # and a reference back to the class
+        view.__cbvclass__ = cls
+
         return view
 
     def dispatch(self, request, *args, **kwargs):
